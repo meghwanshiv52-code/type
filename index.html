@@ -1,0 +1,452 @@
+
+# Let's create a zip file structure containing index.html, style.css, and script.js for "Typing Gold"
+import zipfile
+import os
+
+os.makedirs("typing_gold_project", exist_ok=True)
+
+html_code = """<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Gold - Ultimate Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header-banner">
+    <h1>👑 TYPING GOLD - ULTIMATE MASTER EDITION 👑</h1>
+    <p>High Court Stenographer Premium Dashboard - Multi-Font & Dual Language System</p>
+</div>
+
+<div class="main-layout">
+    <div class="config-table">
+        <div class="config-row">
+            <div class="config-cell" style="width: 25%;">
+                Language / भाषा:<br>
+                <select id="langSelect" class="select-box" onchange="updateLayout()">
+                    <option value="en">English (Official Pro)</option>
+                    <option value="hi">Hindi (हिन्दी टेस्ट)</option>
+                </select>
+            </div>
+            <div class="config-cell" style="width: 30%;">
+                Font Style / फॉन्ट:<br>
+                <select id="fontSelect" class="select-box" onchange="applyFont()">
+                    <option value="Arial, sans-serif">English Standard (Arial)</option>
+                    <option value="'Times New Roman', serif">English Legal (Times New Roman)</option>
+                    <option value="'Kruti Dev 010', 'Devlys 010', Arial">Hindi - KrutiDev / Devlys</option>
+                    <option value="'Mangal', 'Arial', sans-serif">Hindi - Mangal (Remington GAIL/CBI)</option>
+                </select>
+            </div>
+            <div class="config-cell" style="width: 25%;">
+                Test Duration:<br>
+                <select id="timeSelect" class="select-box">
+                    <option value="60">1 Minute Standard</option>
+                    <option value="300">5 Minute High Court Match</option>
+                    <option value="600">10 Minute Full Exam Mode</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-bar">
+        <div class="stat-col">Timer: <span id="timerVal" class="stat-val">00:00</span></div>
+        <div class="stat-col">Gross Speed: <span id="wpmVal" class="stat-val">0 WPM</span></div>
+        <div class="stat-col">Net Speed: <span id="netWpmVal" class="stat-val">0 WPM</span></div>
+        <div class="stat-col">Accuracy Rate: <span id="accuracyVal" class="stat-val">100%</span></div>
+    </div>
+
+    <div class="text-panel" id="textContainer">Select configurations above and hit start...</div>
+
+    <textarea id="typingInput" class="type-textarea" placeholder="Start typing here..." disabled></textarea>
+
+    <div class="footer-layout">
+        <div class="footer-cell">
+            <button id="actionBtn" class="start-btn" onclick="toggleTest()">START FRESH TEST</button>
+        </div>
+        <div class="footer-cell" style="text-align: right; font-weight: bold; color: #2c3e50;">
+            <label><input type="checkbox" id="strictBackspace" checked> Strict High Court Mode (Lock Backspace)</label>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+"""
+
+css_code = """:root {
+    --primary-color: #2c3e50;
+    --gold-color: #ffd700;
+    --gold-dark: #b8860b;
+    --bg-color: #f1f2f6;
+    --correct-color: #2ed573;
+    --incorrect-color: #ff4757;
+}
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: var(--bg-color);
+    margin: 0;
+    padding: 15px;
+}
+.header-banner {
+    background: linear-gradient(135deg, #000000, #2c3e50);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-bottom: 4px solid var(--gold-color);
+}
+.header-banner h1 {
+    margin: 0;
+    font-size: 24pt;
+    color: var(--gold-color);
+    text-transform: uppercase;
+}
+.main-layout {
+    max-width: 1050px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.config-table {
+    display: table;
+    width: 100%;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    margin-bottom: 15px;
+}
+.config-row { display: table-row; }
+.config-cell {
+    display: table-cell;
+    padding: 5px 10px;
+    vertical-align: middle;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+.select-box {
+    padding: 8px;
+    font-size: 10.5pt;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+.stats-bar {
+    display: table;
+    width: 100%;
+    background: #2c3e50;
+    color: white;
+    padding: 12px 0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-top: 2px solid var(--gold-color);
+}
+.stat-col {
+    display: table-cell;
+    width: 25%;
+    font-size: 13pt;
+    font-weight: bold;
+    border-right: 1px solid #485e74;
+}
+.stat-col:last-child { border-right: none; }
+.stat-val { color: var(--gold-color); font-size: 15pt; }
+
+.text-panel {
+    font-size: 18pt;
+    line-height: 2;
+    background: #ffffff;
+    padding: 20px;
+    border: 2px solid #2c3e50;
+    border-radius: 6px;
+    height: 160px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    word-wrap: break-word;
+    text-align: left;
+}
+.word-highlight {
+    background-color: #ffeaa7;
+    color: black;
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-weight: bold;
+    border: 1px solid var(--gold-dark);
+}
+.word-correct { color: var(--correct-color); }
+.word-incorrect { color: var(--incorrect-color); text-decoration: underline; background-color: #ffeaea; }
+
+.type-textarea {
+    width: 100%;
+    font-size: 16pt;
+    padding: 12px;
+    border: 2px solid #ced4da;
+    border-radius: 6px;
+    box-sizing: border-box;
+    height: 95px;
+    resize: none;
+    margin-bottom: 15px;
+}
+.type-textarea:focus {
+    border-color: var(--gold-dark);
+    outline: none;
+}
+.footer-layout {
+    display: table;
+    width: 100%;
+}
+.footer-cell { display: table-cell; vertical-align: middle; }
+.start-btn {
+    background-color: #2ed573;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    font-size: 12pt;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+"""
+
+js_code = """const englishParagraphs = [
+    "The High Court of Rajasthan requires top level steno speeds. Honesty and precise transcription are essential assets for an official reporter. Practice everyday on computer keyboards with strict discipline to secure your recruitment cutoff marks.",
+    "Stenography is an art of writing in shorthand format. A skilled computer operator can transcribe dense data smoothly. Do not look down at keys during your typing evaluation. Speed and absolute accuracy are calculated simultaneously."
+];
+
+const hindiParagraphs = [
+    "राजस्थान उच्च न्यायालय में आशुलिपिक भर्ती परीक्षा के लिए गति एवं शुद्धता का अत्यंत महत्व है। नियमित अभ्यास ही सफलता की एकमात्र कुंजी है। टाइपिंग करते समय अपना ध्यान पूरी तरह स्क्रीन पर केंद्रित रखें।",
+    "सफलता केवल कठिन परिश्रम और निरंतर अभ्यास से ही संभव है। प्रतिदिन सुबह चार बजे उठकर अपनी क्लास और स्टेनो टेस्ट को समय पर पूरा करें ताकि मेरिट लिस्ट में आपका नाम शीर्ष पर आ सके।"
+];
+
+let timerDuration = 60, timeRemaining = 60, timerId = null, isRunning = false;
+let originalWords = [], typedWords = [], currentLanguage = 'en';
+
+const textContainer = document.getElementById('textContainer');
+const typingInput = document.getElementById('typingInput');
+const timerVal = document.getElementById('timerVal');
+const wpmVal = document.getElementById('wpmVal');
+const netWpmVal = document.getElementById('netWpmVal');
+const accuracyVal = document.getElementById('accuracyVal');
+const fontSelect = document.getElementById('fontSelect');
+
+function updateLayout() {
+    currentLanguage = document.getElementById('langSelect').value;
+    fontSelect.value = (currentLanguage === 'hi') ? "'Kruti Dev 010', 'Devlys 010', Arial" : "Arial, sans-serif";
+    applyFont();
+    resetEngine();
+}
+
+function applyFont() {
+    textContainer.style.fontFamily = fontSelect.value;
+    typingInput.style.fontFamily = fontSelect.value;
+}
+
+function resetEngine() {
+    clearInterval(timerId);
+    isRunning = false;
+    typingInput.value = "";
+    typingInput.disabled = true;
+    document.getElementById('actionBtn').innerText = "START FRESH TEST";
+    document.getElementById('actionBtn').style.backgroundColor = "#2ed573";
+    
+    let para = (currentLanguage === 'en') ? englishParagraphs[Math.floor(Math.random() * englishParagraphs.length)] : hindiParagraphs[Math.floor(Math.random() * hindiParagraphs.length)];
+    originalWords = para.trim().split(/\\s+/);
+    renderText(0);
+    
+    timerDuration = parseInt(document.getElementById('timeSelect').value);
+    timeRemaining = timerDuration;
+    updateTimerDisplay();
+    wpmVal.innerText = "0 WPM";
+    netWpmVal.innerText = "0 WPM";
+    accuracyVal.innerText = "100%";
+}
+
+function renderText(currentIndex) {
+    let html = "";
+    for(let i=0; i<originalWords.length; i++) {
+        if(i === currentIndex) { html += `<span class="word-highlight">${originalWords[i]}</span> `; }
+        else if(i < currentIndex) {
+            html += (typedWords[i] === originalWords[i]) ? `<span class="word-correct">${originalWords[i]}</span> ` : `<span class="word-incorrect">${originalWords[i]}</span> `;
+        } else { html += `<span>${originalWords[i]}</span> `; }
+    }
+    textContainer.innerHTML = html;
+}
+
+function updateTimerDisplay() {
+    let mins = Math.floor(timeRemaining / 60), secs = timeRemaining % 60;
+    timerVal.innerText = (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+}
+
+function toggleTest() {
+    if(isRunning) { resetEngine(); }
+    else {
+        isRunning = true; typingInput.disabled = false; typingInput.value = ""; typingInput.focus();
+        timerDuration = parseInt(document.getElementById('timeSelect').value); timeRemaining = timerDuration;
+        document.getElementById('actionBtn').innerText = "RESET SYSTEM"; document.getElementById('actionBtn').style.backgroundColor = "#ff4757";
+        typedWords = []; renderText(0);
+        
+        clearInterval(timerId);
+        timerId = setInterval(() => {
+            timeRemaining--; updateTimerDisplay(); calculateLiveStats();
+            if(timeRemaining <= 0) {
+                clearInterval(timerId); typingInput.disabled = true; isRunning = false;
+                alert("🏁 Final Scores are locked!");
+            }
+        }, 1000);
+    }
+}
+
+if(typingInput) {
+    typingInput.addEventListener('keydown', function(e) {
+        if(e.key === 'Backspace' && document.getElementById('strictBackspace').checked) e.preventDefault();
+    });
+
+    typingInput.addEventListener('input', function() {
+        let val = typingInput.value;
+        if(val.endsWith(" ")) {
+            let word = val.trim();
+            if(word.length > 0) {
+                typedWords.push(word); typingInput.value = "";
+                renderText(typedWords.length); calculateLiveStats();
+            }
+        }
+    });
+}
+
+function calculateLiveStats() {
+    let elapsedMins = (timerDuration - timeRemaining) / 60;
+    if(elapsedMins <= 0) elapsedMins = 1/60;
+    let totalCharsTyped = 0, correctWords = 0;
+    for(let i=0; i<typedWords.length; i++) {
+        totalCharsTyped += typedWords[i].length + 1;
+        if(typedWords[i] === originalWords[i]) correctWords++;
+    }
+    let grossWpm = Math.round((totalCharsTyped / 5) / elapsedMins);
+    let netWpm = Math.round(grossWpm - ((typedWords.length - correctWords) / elapsedMins));
+    let accuracy = typedWords.length > 0 ? Math.round((correctWords / typedWords.length) * 100) : 100;
+    wpmVal.innerText = (isNaN(grossWpm) || grossWpm < 0 ? 0 : grossWpm) + " WPM";
+    netWpmVal.innerText = (isNaN(netWpm) || netWpm < 0 ? 0 : netWpm) + " WPM";
+    accuracyVal.innerText = accuracy + "%";
+}
+
+window.onload = function() { updateLayout(); };
+"""
+
+with open("typing_gold_project/index.html", "w", encoding="utf-8") as f:
+    f.write(html_code)
+
+with open("typing_gold_project/style.css", "w", encoding="utf-8") as f:
+    f.write(css_code)
+
+with open("typing_gold_project/script.js", "w", encoding="utf-8") as f:
+    f.write(js_code)
+
+import shutil
+shutil.make_archive("Typing_Gold_Project", 'zip', "typing_gold_project")
+print("Zip structure successfully created!")
+
+
+Zip structure successfully created!
+
+[file-tag: code-generated-file-0-1782383700802030054]​
+[file-tag: code-generated-file-0-1782383700802030054]​
+[file-tag: code-generated-file-0-1782383700802030054]​
+[file-tag: code-generated-file-0-1782383700802030054]​
+[file-tag: code-generated-file-1-1782383700802036267]​
+[file-tag: code-generated-file-2-1782383700802038270]​
+[file-tag: code-generated-file-3-1782383700802039999]​
+
+Bhai, "Neta Ji" style mein ekdum sateek, sabse kaddak aur Master Mind programmer wala thappa sun le—​Arey mere sher! Ab tu baat kar raha hai ekdum sateek aur professional software developer ki tarah! Tu bol raha hai na ki "Jaise standard tarike se index.html, style.css, aur script.js ki alag-alag files banti hain, mujhe waise folder ke hisab se setup karke naya code de"? Sun, tera yeh aadesh ekdum danke ki chot par APPROVED hai!​
+
+Maine ekdum professional level par teen alag files ka system set kar diya hai. Maine tere liye poora folder project structure banakar use ek ​.zip file mein compress kar diya hai, taaki tu use direct download kar sake!​
+
+Your complete project folder is ready for download:​
+[file-tag: code-generated-file-0-1782383749448130833]​
+
+Agar tu khud manually files banana chahta hai, toh uska sateek folder masterplan aur code niche se note kar:​
+
+📂 "Typing Gold" Folder Structure (Esa Dikhega):​
+Desktop par ek main folder bana ​Typing Gold, aur uske andar yeh teen alag-alag files banao:​
+📂 Typing Gold (Main Folder)
+ ├── 📄 index.html
+ ├── 📄 style.css
+ └── 📄 script.js
+
+
+1. 📄 File Name: ​index.html
+Is file mein tere software ka poora dhacha (skeleton) hai. Notepad mein paste karke ​index.html naam se save karo:​
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Gold - Ultimate Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header-banner">
+    <h1>👑 TYPING GOLD - ULTIMATE MASTER EDITION 👑</h1>
+    <p>High Court Stenographer Premium Dashboard - Multi-Font & Dual Language System</p>
+</div>
+
+<div class="main-layout">
+    <div class="config-table">
+        <div class="config-row">
+            <div class="config-cell" style="width: 25%;">
+                Language / भाषा:<br>
+                <select id="langSelect" class="select-box" onchange="updateLayout()">
+                    <option value="en">English (Official Pro)</option>
+                    <option value="hi">Hindi (हिन्दी टेस्ट)</option>
+                </select>
+            </div>
+            <div class="config-cell" style="width: 30%;">
+                Font Style / फॉन्ट:<br>
+                <select id="fontSelect" class="select-box" onchange="applyFont()">
+                    <option value="Arial, sans-serif">English Standard (Arial)</option>
+                    <option value="'Times New Roman', serif">English Legal (Times New Roman)</option>
+                    <option value="'Kruti Dev 010', 'Devlys 010', Arial">Hindi - KrutiDev / Devlys</option>
+                    <option value="'Mangal', 'Arial', sans-serif">Hindi - Mangal (Remington GAIL/CBI)</option>
+                </select>
+            </div>
+            <div class="config-cell" style="width: 25%;">
+                Test Duration:<br>
+                <select id="timeSelect" class="select-box">
+                    <option value="60">1 Minute Standard</option>
+                    <option value="300">5 Minute High Court Match</option>
+                    <option value="600">10 Minute Full Exam Mode</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-bar">
+        <div class="stat-col">Timer: <span id="timerVal" class="stat-val">00:00</span></div>
+        <div class="stat-col">Gross Speed: <span id="wpmVal" class="stat-val">0 WPM</span></div>
+        <div class="stat-col">Net Speed: <span id="netWpmVal" class="stat-val">0 WPM</span></div>
+        <div class="stat-col">Accuracy Rate: <span id="accuracyVal" class="stat-val">100%</span></div>
+    </div>
+
+    <div class="text-panel" id="textContainer">Select configurations above and hit start...</div>
+
+    <textarea id="typingInput" class="type-textarea" placeholder="Start typing here..." disabled></textarea>
+
+    <div class="footer-layout">
+        <div class="footer-cell">
+            <button id="actionBtn" class="start-btn" onclick="toggleTest()">START FRESH TEST</button>
+        </div>
+        <div class="footer-cell" style="text-align: right; font-weight: bold; color: #2c3e50;">
+            <label><input type="checkbox" id="strictBackspace" checked> Strict High Court Mode (Lock Backspace)</label>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
