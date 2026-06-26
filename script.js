@@ -1,54 +1,122 @@
-const englishParagraphs = [
-    "The High Court of Rajasthan requires top level steno speeds. Honesty and precise transcription are essential assets for an official reporter. Practice everyday on computer keyboards with strict discipline to secure your recruitment cutoff marks.",
-    "Stenography is an art of writing in shorthand format. A skilled computer operator can transcribe dense data smoothly. Do not look down at keys during your typing evaluation. Speed and absolute accuracy are calculated simultaneously."
+  // ==========================================
+// 📚 MASTER POOL (Base Paragraphs for Generator)
+// ==========================================
+const basePool = [
+    {
+        hindi: "हमारा देश महान स्त्रियों और पुरुषों का देश है जिन्होंने देश के लिए ऐसे आदर्श कार्य किए हैं जिन्हें भारतवासी सदा याद रखेंगे। कई महापुरुषों ने हमारी आजादी की लड़ाई में अपना सब कुछ अर्पण कर दिया।",
+        english: "Our country is a land of great men and women who have done such exemplary deeds for the nation that Indians will always remember them. Many great men sacrificed everything in our freedom struggle."
+    },
+    {
+        hindi: "याचिकाकर्ता की ओर से उपस्थित विद्वान अधिवक्ता ने तर्क दिया कि अधीनस्थ न्यायालय का निर्णय साक्ष्यों के विपरीत है। धारा 144 के तहत जारी आदेश को निरस्त किया जाना चाहिए क्योंकि यह अधिकारों का हनन है।",
+        english: "The learned counsel appearing for the petitioner argued that the judgment of the subordinate court is contrary to the evidence. The order issued under Section 144 must be quashed as it violates rights."
+    },
+    {
+        hindi: "सफलता केवल कठिन परिश्रम और निरंतर अभ्यास से ही संभव है। सरकारी नौकरी प्राप्त करने के लिए आपको मानसिक रूप से मजबूत होना पड़ेगा और अपनी गलतियों से सीखना होगा। प्रतिदिन सुबह उठकर टाइपिंग करें।",
+        english: "Success is possible only through hard work and continuous practice. To get a government job, you have to be mentally strong and learn from your mistakes. Practice typing every morning."
+    },
+    {
+        hindi: "अभियुक्त को भारतीय दंड संहिता की धारा 302 और 34 के तहत दोषी ठहराया गया है। जमानत याचिका को खारिज करते हुए न्यायालय ने कहा कि अपराध अत्यंत गंभीर प्रकृति का है और साक्ष्यों से छेड़छाड़ संभव है।",
+        english: "The accused has been convicted under sections 302 and 34 of the Indian Penal Code. Rejecting the bail plea, the court stated that the offense is of a very serious nature and tampering with evidence is possible."
+    },
+    {
+        hindi: "विवादित संपत्ति का मालिकाना हक वादी के पास है। प्रतिवादी ने फर्जी दस्तावेजों के आधार पर कब्जा करने का प्रयास किया था, जिसे अवैध घोषित किया जाता है। प्रशासन को बेदखली के आदेश दिए जाते हैं।",
+        english: "The ownership of the disputed property lies with the plaintiff. The defendant attempted to take possession on the basis of forged documents, which is declared illegal. Eviction orders are given to the administration."
+    }
 ];
 
-const hindiParagraphs = [
-    "राजस्थान उच्च न्यायालय में आशुलिपिक भर्ती परीक्षा के लिए गति एवं शुद्धता का अत्यंत महत्व है। नियमित अभ्यास ही सफलता की एकमात्र कुंजी है। टाइपिंग करते समय अपना ध्यान पूरी तरह स्क्रीन पर केंद्रित रखें।",
-    "सफलता केवल कठिन परिश्रम और निरंतर अभ्यास से ही संभव है। प्रतिदिन सुबह चार बजे उठकर अपनी क्लास और स्टेनो टेस्ट को समय पर पूरा करें ताकि मेरिट लिस्ट में आपका नाम शीर्ष पर आ सके।"
-];
+// ==========================================
+// ⚙️ THE 450 EXERCISE AUTO-GENERATOR
+// ==========================================
+const exercises = [];
 
-let timerDuration = 60, timeRemaining = 60, timerId = null, isRunning = false;
-let originalWords = [], typedWords = [], currentLanguage = 'en';
+// YEH LOOP EXACT 450 EXERCISES BANAYEGA
+for (let i = 1; i <= 450; i++) {
+    let type = (i % 2 === 0) ? "Legal Court Matter" : "Normal Exam Matter";
+    let baseText = basePool[i % basePool.length]; 
+    
+    exercises.push({
+        id: i,
+        title: `Exercise ${i} - ${type}`,
+        hindi: baseText.hindi,
+        english: baseText.english
+    });
+}
 
+// ==========================================
+// ⚙️ SYSTEM LOGIC (DASHBOARD & TYPING)
+// ==========================================
+const dashboardScreen = document.getElementById('dashboardScreen');
+const testScreen = document.getElementById('testScreen');
+const exerciseList = document.getElementById('exerciseList');
 const textContainer = document.getElementById('textContainer');
 const typingInput = document.getElementById('typingInput');
 const timerVal = document.getElementById('timerVal');
-const wpmVal = document.getElementById('wpmVal');
-const netWpmVal = document.getElementById('netWpmVal');
-const accuracyVal = document.getElementById('accuracyVal');
-const fontSelect = document.getElementById('fontSelect');
+const testTitle = document.getElementById('testTitle');
+const timeSelect = document.getElementById('timeSelect');
 
-function updateLayout() {
-    currentLanguage = document.getElementById('langSelect').value;
-    fontSelect.value = (currentLanguage === 'hi') ? "'Kruti Dev 010', 'Devlys 010', Arial" : "Arial, sans-serif";
-    applyFont();
+let currentText = "", originalWords = [], typedWords = [];
+let timerDuration = 600, timeRemaining = 600, timerId = null, isRunning = false;
+let currentLang = 'english'; 
+
+function loadDashboard() {
+    exerciseList.innerHTML = "";
+    // Creates 450 rows in the UI
+    exercises.forEach((ex, index) => {
+        let row = document.createElement('div');
+        row.className = 'exercise-row';
+        row.innerHTML = `
+            <div class="ex-title">${ex.title}</div>
+            <div class="btn-group">
+                <button class="btn-english" onclick="startTest(${index}, 'english')">English</button>
+                <button class="btn-hindi" onclick="startTest(${index}, 'hindi')">Hindi</button>
+            </div>
+        `;
+        exerciseList.appendChild(row);
+    });
+}
+
+function startTest(index, lang) {
+    dashboardScreen.style.display = "none";
+    testScreen.style.display = "block";
+    currentLang = lang;
+    
+    let ex = exercises[index];
+    testTitle.innerText = ex.title + " (" + lang.toUpperCase() + ")";
+    currentText = lang === 'hindi' ? ex.hindi : ex.english;
+    
+    if(lang === 'hindi') {
+        textContainer.style.fontFamily = "'Mangal', Arial, sans-serif";
+        typingInput.style.fontFamily = "'Mangal', Arial, sans-serif";
+    } else {
+        textContainer.style.fontFamily = "Arial, sans-serif";
+        typingInput.style.fontFamily = "Arial, sans-serif";
+    }
+    
     resetEngine();
 }
 
-function applyFont() {
-    textContainer.style.fontFamily = fontSelect.value;
-    typingInput.style.fontFamily = fontSelect.value;
+function goBack() {
+    clearInterval(timerId);
+    testScreen.style.display = "none";
+    dashboardScreen.style.display = "block";
 }
 
 function resetEngine() {
     clearInterval(timerId);
     isRunning = false;
     typingInput.value = "";
-    typingInput.disabled = true;
-    document.getElementById('actionBtn').innerText = "START FRESH TEST";
-    document.getElementById('actionBtn').style.backgroundColor = "#2ed573";
+    typingInput.disabled = false;
     
-    let para = (currentLanguage === 'en') ? englishParagraphs[Math.floor(Math.random() * englishParagraphs.length)] : hindiParagraphs[Math.floor(Math.random() * hindiParagraphs.length)];
-    originalWords = para.trim().split(/\s+/);
+    originalWords = currentText.trim().split(/\s+/);
+    typedWords = [];
     renderText(0);
     
-    timerDuration = parseInt(document.getElementById('timeSelect').value);
+    timerDuration = parseInt(timeSelect.value);
     timeRemaining = timerDuration;
     updateTimerDisplay();
-    wpmVal.innerText = "0 WPM";
-    netWpmVal.innerText = "0 WPM";
-    accuracyVal.innerText = "100%";
+    document.getElementById('wpmVal').innerText = "0 WPM";
+    document.getElementById('netWpmVal').innerText = "0 WPM";
+    document.getElementById('accuracyVal').innerText = "100%";
 }
 
 function renderText(currentIndex) {
@@ -67,41 +135,27 @@ function updateTimerDisplay() {
     timerVal.innerText = (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
 }
 
-function toggleTest() {
-    if(isRunning) { resetEngine(); }
-    else {
-        isRunning = true; typingInput.disabled = false; typingInput.value = ""; typingInput.focus();
-        timerDuration = parseInt(document.getElementById('timeSelect').value); timeRemaining = timerDuration;
-        document.getElementById('actionBtn').innerText = "RESET SYSTEM"; document.getElementById('actionBtn').style.backgroundColor = "#ff4757";
-        typedWords = []; renderText(0);
-        
-        clearInterval(timerId);
+typingInput.addEventListener('input', function() {
+    if(!isRunning && typingInput.value.trim().length > 0) {
+        isRunning = true;
         timerId = setInterval(() => {
             timeRemaining--; updateTimerDisplay(); calculateLiveStats();
             if(timeRemaining <= 0) {
                 clearInterval(timerId); typingInput.disabled = true; isRunning = false;
-                alert("🏁 Final Scores are locked!");
+                alert("🏁 Test Time Over!");
             }
         }, 1000);
     }
-}
-
-if(typingInput) {
-    typingInput.addEventListener('keydown', function(e) {
-        if(e.key === 'Backspace' && document.getElementById('strictBackspace').checked) e.preventDefault();
-    });
-
-    typingInput.addEventListener('input', function() {
-        let val = typingInput.value;
-        if(val.endsWith(" ")) {
-            let word = val.trim();
-            if(word.length > 0) {
-                typedWords.push(word); typingInput.value = "";
-                renderText(typedWords.length); calculateLiveStats();
-            }
+    
+    let val = typingInput.value;
+    if(val.endsWith(" ")) {
+        let word = val.trim();
+        if(word.length > 0) {
+            typedWords.push(word); typingInput.value = "";
+            renderText(typedWords.length); calculateLiveStats();
         }
-    });
-}
+    }
+});
 
 function calculateLiveStats() {
     let elapsedMins = (timerDuration - timeRemaining) / 60;
@@ -114,7 +168,11 @@ function calculateLiveStats() {
     let grossWpm = Math.round((totalCharsTyped / 5) / elapsedMins);
     let netWpm = Math.round(grossWpm - ((typedWords.length - correctWords) / elapsedMins));
     let accuracy = typedWords.length > 0 ? Math.round((correctWords / typedWords.length) * 100) : 100;
-    wpmVal.innerText = (isNaN(grossWpm) || grossWpm < 0 ? 0 : grossWpm) + " WPM";
-    netWpmVal.innerText = (isNaN(netWpm) || netWpm < 0 ? 0 : netWpm) + " WPM";
-    accuracyVal.innerText = accuracy + "%";
+    
+    document.getElementById('wpmVal').innerText = (grossWpm > 0 ? grossWpm : 0) + " WPM";
+    document.getElementById('netWpmVal').innerText = (netWpm > 0 ? netWpm : 0) + " WPM";
+    document.getElementById('accuracyVal').innerText = accuracy + "%";
 }
+
+timeSelect.addEventListener('change', resetEngine);
+window.onload = loadDashboard;
